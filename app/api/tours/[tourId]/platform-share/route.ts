@@ -5,14 +5,14 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { tourId: string } }
+  { params }: { params: Promise<{ tourId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { tourId } = params;
+  const { tourId } = await params;
   if (!tourId) {
     return NextResponse.json({ error: "Tour inválido" }, { status: 400 });
   }
