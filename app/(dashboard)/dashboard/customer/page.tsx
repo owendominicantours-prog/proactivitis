@@ -12,9 +12,10 @@ export default async function CustomerDashboardPage() {
     return <div className="py-10 text-center text-sm text-slate-600">Inicia sesión para ver tus reservas.</div>;
   }
 
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   const bookings = await prisma.booking.findMany({
     where: {
-      OR: [{ customerEmail: session.user.email }, { userId: session.user.id ?? undefined }]
+      OR: [{ customerEmail: session.user.email }, { userId: user?.id }]
     },
     include: { tour: true },
     orderBy: { travelDate: "asc" }
