@@ -5,7 +5,7 @@ export default async function AgencyTourCatalogPage() {
   const tours = await prisma.tour.findMany({
     where: { status: "published" },
     include: {
-      supplier: {
+      SupplierProfile: {
         select: {
           company: true
         }
@@ -19,7 +19,7 @@ export default async function AgencyTourCatalogPage() {
     title: tour.title,
     price: tour.price,
     location: tour.location,
-    supplier: tour.supplier.company,
+    supplier: tour.SupplierProfile.company,
     heroImage: tour.heroImage ?? "/fototours/fototour.jpeg",
     destination: tour.country ?? tour.location
   }));
