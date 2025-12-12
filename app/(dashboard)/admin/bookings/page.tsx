@@ -8,6 +8,7 @@ import {
   adminApproveCancellation
 } from "@/lib/actions/bookingCancellation";
 import { formatTimeUntil } from "@/lib/bookings";
+import { BookingStatusEnum, type BookingStatus } from "@/lib/types/booking";
 
 export default async function AdminBookingsPage() {
   const bookings = await prisma.booking.findMany({
@@ -17,6 +18,11 @@ export default async function AdminBookingsPage() {
   const cancellationRequests = bookings.filter(
     (booking) => booking.status === "CANCELLATION_REQUESTED"
   );
+  const normalizeStatus = (status: string): BookingStatus => {
+    const values = Object.values(BookingStatusEnum);
+    return (values.includes(status as BookingStatus) ? (status as BookingStatus) : BookingStatusEnum.CONFIRMED);
+  };
+
   const rows: BookingRow[] = bookings.map((booking) => ({
     id: booking.id,
     travelDate: booking.travelDate.toLocaleDateString("es-ES"),
@@ -27,7 +33,7 @@ export default async function AdminBookingsPage() {
     customerName: booking.customerName,
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
-    status: booking.status,
+    status: normalizeStatus(booking.status),
     source: booking.source,
     hotel: booking.hotel,
     cancellationReason: booking.cancellationReason,
