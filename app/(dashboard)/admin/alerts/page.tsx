@@ -24,7 +24,7 @@ export default async function AdminAlertsPage() {
             <p className="text-sm font-semibold text-slate-900">{alert.Tour?.title ?? "Tour"}</p>
             <p className="text-xs text-slate-500">Estado: {alert.status}</p>
             <p className="text-xs text-slate-500">
-              Fecha: {alert.date.toLocaleDateString("es-DO")} · Pax: {alert.passengers}
+              Fecha: {alert.travelDate.toLocaleDateString("es-DO")} · Pax: {alert.passengers}
             </p>
           </div>
         ))}
