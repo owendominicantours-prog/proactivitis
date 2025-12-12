@@ -8,7 +8,7 @@ export default async function AdminAlertsPage() {
     take: 5,
     orderBy: { updatedAt: "desc" },
     include: {
-      tour: { select: { title: true } }
+      Tour: { select: { title: true } }
     }
   });
 
@@ -21,7 +21,7 @@ export default async function AdminAlertsPage() {
       <div className="mt-6 space-y-3">
         {alerts.map((alert) => (
           <div key={alert.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">{alert.tour.title}</p>
+            <p className="text-sm font-semibold text-slate-900">{alert.Tour?.title ?? "Tour"}</p>
             <p className="text-xs text-slate-500">Estado: {alert.status}</p>
             <p className="text-xs text-slate-500">
               Fecha: {alert.date.toLocaleDateString("es-DO")} · Pax: {alert.passengers}
