@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
-export async function GET(_: Request, { params }: { params: { fileId: string } }) {
-  const { fileId } = params;
+export async function GET(_: Request, { params }: { params: Promise<{ fileId: string }> }) {
+  const { fileId } = await params;
   console.log("GET /api/uploaded -> fileId", fileId);
   if (!fileId) {
     return NextResponse.json({ error: "Archivo no especificado" }, { status: 400 });
