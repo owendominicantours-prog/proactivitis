@@ -26,10 +26,11 @@ model Account {
 }
 
 model AgencyProfile {
-  id          String @id
-  userId      String @unique
+  id          String  @id
+  userId      String  @unique
   companyName String
-  User        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approved    Boolean @default(false)
+  User        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
