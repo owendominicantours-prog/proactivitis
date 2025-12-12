@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { PanelShell } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
+import type { Notification } from "@prisma/client";
 import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/notificationService";
 import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton";
 import { prisma } from "@/lib/prisma";
@@ -32,7 +33,7 @@ export default async function AgencyDashboardLayout({ children }: { children: Re
   }
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   const isAgency = user?.role === "AGENCY";
-  let notifications = [];
+  let notifications: Notification[] = [];
   let unreadCount = 0;
 
   if (isAgency) {

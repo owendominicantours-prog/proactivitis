@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 
 const roleRoutes = [
@@ -23,7 +23,7 @@ function matchAllowed(pathname: string, role?: string) {
 }
 
 export default withAuth(
-  () => {},
+  () => NextResponse.next(),
   {
     callbacks: {
       authorized({ token, req }) {
