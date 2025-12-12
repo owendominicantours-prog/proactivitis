@@ -257,3 +257,61 @@ export async function getToursByDestinationSlug(countrySlug: string, destination
 
   return tours.map(mapToTourForCard);
 }
+
+export async function getAllDestinationSlugs() {
+  return prisma.destination.findMany({
+    select: {
+      slug: true
+    }
+  });
+}
+
+export async function getDestinationBySlug(destinationSlug: string): Promise<DestinationWithCountry | null> {
+  return prisma.destination.findFirst({
+    where: {
+      slug: destinationSlug
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      shortDescription: true,
+      heroImage: true,
+      country: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          code: true
+        }
+      }
+    }
+  });
+}
+
+export type TourForSearch = {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  language: string;
+  category?: string | null;
+};
+
+export async function getToursForSearch(): Promise<TourForSearch[]> {
+  const tours = await prisma.tour.findMany({
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      duration: true,
+      language: true,
+      category: true
+    },
+    orderBy: {
+      title: "asc"
+    }
+  });
+
+  return tours;
+}

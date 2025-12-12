@@ -1,6 +1,8 @@
-import { toursCatalog } from "@/lib/destinations";
+import { getToursForSearch } from "@/lib/destinations";
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  const tours = await getToursForSearch();
+
   return (
     <div className="space-y-10 bg-slate-50 pb-16 pt-8">
       <div className="mx-auto max-w-6xl px-6">
@@ -10,7 +12,7 @@ export default function SearchPage() {
         </p>
       </div>
       <div className="mx-auto max-w-6xl space-y-4 px-6">
-        {toursCatalog.map((tour) => (
+        {tours.map((tour) => (
           <div
             key={tour.id}
             className="rounded-[30px] bg-white p-6 shadow-card transition hover:border-slate-200 hover:bg-slate-50"
@@ -20,6 +22,7 @@ export default function SearchPage() {
             <div className="mt-3 flex flex-wrap gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
               <span>{tour.duration}</span>
               <span>{tour.language}</span>
+              {tour.category && <span>{tour.category}</span>}
             </div>
           </div>
         ))}

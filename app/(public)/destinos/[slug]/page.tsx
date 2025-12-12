@@ -1,18 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
-import { destinations, toursCatalog } from "@/lib/destinations";
+import {
+  getAllDestinationSlugs,
+  getDestinationBySlug,
+  getToursByDestinationSlug
+} from "@/lib/destinations";
 
 type Params = {
   params: { slug: string };
 };
 
 export async function generateStaticParams() {
+  const destinations = await getAllDestinationSlugs();
   return destinations.map((destination) => ({ slug: destination.slug }));
 }
 
-export default function DestinationPage({ params }: Params) {
-  const destination = destinations.find((item) => item.slug === params.slug);
-  const relatedTours = toursCatalog.filter((tour) => destination?.tours.includes(tour.id));
+export default async function DestinationPage({ params }: Params) {
+  const destination = await getDestinationBySlug(params.slug);
+  const relatedTours = destination
+    ? await getToursByDestinationSlug(destination.country.slug, destination.slug)
+    : [];
 
   if (!destination) {
     return (
@@ -28,7 +35,7 @@ export default function DestinationPage({ params }: Params) {
       <section className="relative overflow-hidden">
         <div className="relative h-[360px]">
           <Image
-            src={destination.image}
+            src={destination.heroImage ?? "/fototours/fototour.jpeg"}
             alt={destination.name}
             fill
             sizes="100vw"
@@ -39,7 +46,9 @@ export default function DestinationPage({ params }: Params) {
         <div className="absolute inset-y-0 left-6 flex flex-col justify-center space-y-3 text-white">
           <p className="text-xs uppercase tracking-[0.5em]">{destination.name}</p>
           <h1 className="text-4xl font-black lg:text-5xl">{destination.name}</h1>
-          <p className="max-w-2xl text-sm text-white/80">{destination.summary}</p>
+          <p className="max-w-2xl text-sm text-white/80">
+            {destination.shortDescription ?? "Descubre este destino mágico con tours seleccionados."}
+          </p>
         </div>
       </section>
 
@@ -47,7 +56,9 @@ export default function DestinationPage({ params }: Params) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Tours en {destination.name}</p>
-            <h2 className="text-3xl font-bold text-slate-900">Experiencias con reviews reales y precios transparentes</h2>
+            <h2 className="text-3xl font-bold text-slate-900">
+              Experiencias con reseñas reales y precios transparentes
+            </h2>
           </div>
           <Link href="/tours" className="text-sm font-semibold text-brand underline">
             Ver todo el catálogo
@@ -61,7 +72,7 @@ export default function DestinationPage({ params }: Params) {
             >
               <div className="relative h-52">
                 <Image
-                  src={tour.image}
+                  src={tour.heroImage ?? "/fototours/fototour.jpeg"}
                   alt={tour.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -69,17 +80,16 @@ export default function DestinationPage({ params }: Params) {
                 />
               </div>
               <div className="flex flex-1 flex-col gap-3 px-5 py-4">
-                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  <span>{tour.category}</span>
-                  <span className="text-amber-500">★ {tour.rating.toFixed(1)}</span>
+                <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
+                  <span>{tour.category ?? "Experiencia"}</span>
+                  <span>{tour.language}</span>
                 </div>
                 <h3 className="text-2xl font-semibold text-slate-900">{tour.title}</h3>
+                <p className="text-sm text-slate-500">{tour.location}</p>
                 <p className="text-sm text-slate-500">{tour.description}</p>
-                <div className="text-sm text-slate-500">
-                  <span className="font-semibold text-slate-900">{tour.reviews}</span> reviews · {tour.duration}
-                </div>
+                <div className="text-sm text-slate-500">Duración: {tour.duration}</div>
                 <div className="flex items-center justify-between text-sm font-semibold text-slate-900">
-                  <span className="text-3xl font-bold text-brand">${tour.price}</span>
+                  <span className="text-3xl font-bold text-brand">Desde ${tour.price.toFixed(0)}</span>
                   <button className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-brand">
                     Reservar
                   </button>
