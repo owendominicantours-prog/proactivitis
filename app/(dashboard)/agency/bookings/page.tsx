@@ -5,21 +5,28 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PanelShell } from "@/components/dashboard/PanelShell";
 import { BookingTable } from "@/components/bookings/BookingTable";
+import { ReactNode } from "react";
 import {
   agencyCancelBooking,
   agencyRequestCancellation
 } from "@/lib/actions/bookingCancellation";
 import { requiresCancellationRequest } from "@/lib/bookings";
+import { BookingSourceEnum, BookingStatusEnum, type BookingSource, type BookingStatus } from "@/lib/types/booking";
 
 export default async function AgencyBookingsPage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  if (!session?.user?.email) {
     return <div className="py-10 text-center text-sm text-slate-600">Inicia sesión para ver tus reservas.</div>;
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) {
+    return <div className="py-10 text-center text-sm text-slate-600">No se encontró tu cuenta.</div>;
   }
 
   const bookings = await prisma.booking.findMany({
     where: { source: "AGENCY" },
-    include: { tour: true },
+    include: { Tour: true },
     orderBy: { createdAt: "desc" }
   });
 
@@ -32,29 +39,39 @@ export default async function AgencyBookingsPage() {
 
   const totalCommission = bookingsThisMonth.reduce((sum, booking) => sum + booking.totalAmount * 0.2, 0);
 
+  const normalizeStatus = (status: string): BookingStatus => {
+    const values = Object.values(BookingStatusEnum);
+    return (values.includes(status as BookingStatus) ? (status as BookingStatus) : BookingStatusEnum.CONFIRMED);
+  };
+
+  const normalizeSource = (source: string): BookingSource => {
+    const values = Object.values(BookingSourceEnum);
+    return (values.includes(source as BookingSource) ? (source as BookingSource) : BookingSourceEnum.AGENCY);
+  };
+
   const rows = bookings.map((booking) => ({
     id: booking.id,
     travelDate: booking.travelDate.toLocaleDateString("es-ES"),
     createdAt: booking.createdAt.toLocaleDateString("es-ES"),
     travelDateValue: booking.travelDate.toISOString(),
     createdAtValue: booking.createdAt.toISOString(),
-    tourTitle: booking.tour.title,
+    tourTitle: booking.Tour?.title ?? "Tour no disponible",
     customerName: booking.customerName,
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
-    status: booking.status,
-    source: booking.source,
+    status: normalizeStatus(booking.status),
+    source: normalizeSource(booking.source),
     hotel: booking.hotel,
     cancellationReason: booking.cancellationReason,
     cancellationByRole: booking.cancellationByRole,
     cancellationAt: booking.cancellationAt?.toISOString() ?? null
   }));
 
-  const rowActions = bookings.map((booking) => {
-    const travelDate = new Date(booking.travelDateValue);
+  const rowActions = bookings.reduce<Record<string, ReactNode>>((acc, booking) => {
+    const travelDate = new Date(booking.travelDate);
     const needsRequest = requiresCancellationRequest(travelDate);
-    return (
-      <details key={booking.id} className="space-y-2 text-xs text-slate-500">
+    acc[booking.id] = (
+      <details className="space-y-2 text-xs text-slate-500">
         <summary className="cursor-pointer rounded-md border border-slate-200 px-3 py-1 text-center font-semibold text-slate-600">
           {needsRequest ? "Solicitar cancelación" : "Cancelar reserva"}
         </summary>
@@ -82,7 +99,8 @@ export default async function AgencyBookingsPage() {
         </form>
       </details>
     );
-  });
+    return acc;
+  }, {});
 
   return (
     <PanelShell roleLabel="Agency" title="Reservas" navItems={[{ label: "Reservas", href: "/agency/bookings" }]}>

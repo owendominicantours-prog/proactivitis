@@ -8,6 +8,16 @@ export default async function AdminToursPage() {
         select: {
           company: true
         }
+      },
+      departureDestination: {
+        select: {
+          slug: true,
+          country: {
+            select: {
+              name: true
+            }
+          }
+        }
       }
     }
   });
@@ -37,7 +47,7 @@ export default async function AdminToursPage() {
     },
     status: tour.status,
     heroImage: tour.heroImage ?? null,
-    country: tour.country ?? tour.location
+    country: tour.departureDestination?.country?.name ?? tour.location
   }));
 
   return (

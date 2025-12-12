@@ -3,12 +3,13 @@ export const dynamic = "force-dynamic"; // Needs fresh reservation & cancellatio
 import { prisma } from "@/lib/prisma";
 import { BookingTable, BookingRow } from "@/components/bookings/BookingTable";
 import { BookingStatusBadge } from "@/components/bookings/BookingStatusBadge";
+import type { ReactNode } from "react";
 import {
   adminCancelBooking,
   adminApproveCancellation
 } from "@/lib/actions/bookingCancellation";
 import { formatTimeUntil } from "@/lib/bookings";
-import { BookingStatusEnum, type BookingStatus } from "@/lib/types/booking";
+import { BookingStatusEnum, BookingSourceEnum, type BookingStatus, type BookingSource } from "@/lib/types/booking";
 
 export default async function AdminBookingsPage() {
   const bookings = await prisma.booking.findMany({
@@ -19,8 +20,13 @@ export default async function AdminBookingsPage() {
     (booking) => booking.status === "CANCELLATION_REQUESTED"
   );
   const normalizeStatus = (status: string): BookingStatus => {
-    const values = Object.values(BookingStatusEnum);
-    return (values.includes(status as BookingStatus) ? (status as BookingStatus) : BookingStatusEnum.CONFIRMED);
+    const values = Object.values(BookingStatusEnum) as BookingStatus[];
+    return values.includes(status as BookingStatus) ? (status as BookingStatus) : BookingStatusEnum.CONFIRMED;
+  };
+
+  const normalizeSource = (source: string): BookingSource => {
+    const values = Object.values(BookingSourceEnum) as BookingSource[];
+    return values.includes(source as BookingSource) ? (source as BookingSource) : BookingSourceEnum.WEB;
   };
 
   const rows: BookingRow[] = bookings.map((booking) => ({
@@ -34,34 +40,37 @@ export default async function AdminBookingsPage() {
     pax: booking.paxAdults + booking.paxChildren,
     totalAmount: booking.totalAmount,
     status: normalizeStatus(booking.status),
-    source: booking.source,
+    source: normalizeSource(booking.source),
     hotel: booking.hotel,
     cancellationReason: booking.cancellationReason,
     cancellationByRole: booking.cancellationByRole,
     cancellationAt: booking.cancellationAt?.toISOString() ?? null
   }));
-  const rowActions = bookings.map((booking) => (
-    <details key={booking.id} className="space-y-2 text-xs text-slate-500">
-      <summary className="cursor-pointer rounded-md border border-slate-200 px-3 py-1 text-center font-semibold text-slate-600">
-        Cancelar
-      </summary>
-      <form action={adminCancelBooking} method="post" className="space-y-2">
-        <input type="hidden" name="bookingId" value={booking.id} />
-        <textarea
-          name="reason"
-          required
-          placeholder="Motivo de cancelación"
-          className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-700"
-        />
-        <button
-          type="submit"
-          className="w-full rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white"
-        >
-          Confirmar cancelación
-        </button>
-      </form>
-    </details>
-  ));
+  const rowActions = bookings.reduce<Record<string, ReactNode>>((acc, booking) => {
+    acc[booking.id] = (
+      <details className="space-y-2 text-xs text-slate-500">
+        <summary className="cursor-pointer rounded-md border border-slate-200 px-3 py-1 text-center font-semibold text-slate-600">
+          Cancelar
+        </summary>
+        <form action={adminCancelBooking} method="post" className="space-y-2">
+          <input type="hidden" name="bookingId" value={booking.id} />
+          <textarea
+            name="reason"
+            required
+            placeholder="Motivo de cancelación"
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-700"
+          />
+          <button
+            type="submit"
+            className="w-full rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white"
+          >
+            Confirmar cancelación
+          </button>
+        </form>
+      </details>
+    );
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6">
@@ -88,9 +97,9 @@ export default async function AdminBookingsPage() {
               <article key={booking.id} className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-base font-semibold text-slate-900">{booking.tourTitle}</p>
+            <p className="text-base font-semibold text-slate-900">{booking.Tour?.title ?? "Tour no disponible"}</p>
                     <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                      {booking.travelDate} · {formatTimeUntil(new Date(booking.travelDateValue))}
+                      {booking.travelDate.toLocaleDateString("es-ES")} · {formatTimeUntil(new Date(booking.travelDate))}
                     </p>
                   </div>
                   <BookingStatusBadge status="CANCELLATION_REQUESTED" />

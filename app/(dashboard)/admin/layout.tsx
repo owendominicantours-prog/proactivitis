@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { PanelShell, NotificationMenuItem } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
 import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/notificationService";
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
 const adminNav = [
   { label: "Dashboard", href: "/admin" },
@@ -27,7 +29,13 @@ export const metadata = {
 
 export default async function AdminDashboardLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "ADMIN";
+  if (!session?.user?.email) {
+    notFound();
+  }
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  });
+  const isAdmin = user?.role === "ADMIN";
   let notifications: NotificationMenuItem[] = [];
   let unreadCount = 0;
 
@@ -48,7 +56,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
       notifications={notifications}
       unreadCount={unreadCount}
       notificationLink={isAdmin ? "/admin/notifications" : undefined}
-      accountId={session?.user?.id ?? null}
+      accountId={user?.id ?? null}
     >
       {children}
     </PanelShell>

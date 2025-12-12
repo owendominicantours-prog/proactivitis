@@ -23,7 +23,8 @@ export default async function AdminDashboard() {
 
   const getValue = (key: typeof kpiCards[number]["key"]) => {
     if (key === "grossRevenue") return formatCurrency(stats.grossRevenue);
-    return stats[key].toLocaleString ? stats[key].toLocaleString() : String(stats[key]);
+    const value = stats[key];
+    return typeof value === "number" ? value.toLocaleString() : String(value);
   };
 
   return (

@@ -4,6 +4,8 @@ import { PanelShell } from "@/components/dashboard/PanelShell";
 import { authOptions } from "@/lib/auth";
 import { getNotificationUnreadCount, getNotificationsForRecipient } from "@/lib/notificationService";
 import { SupportTicketButton } from "@/components/dashboard/SupportTicketButton";
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
 const agencyNav = [
   { label: "Dashboard", href: "/agency" },
@@ -25,7 +27,11 @@ export const metadata = {
 
 export default async function AgencyDashboardLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions);
-  const isAgency = session?.user?.role === "AGENCY";
+  if (!session?.user?.email) {
+    notFound();
+  }
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const isAgency = user?.role === "AGENCY";
   let notifications = [];
   let unreadCount = 0;
 
@@ -47,7 +53,7 @@ export default async function AgencyDashboardLayout({ children }: { children: Re
         notifications={notifications}
         unreadCount={unreadCount}
         notificationLink="/agency/notifications"
-        accountId={session?.user?.id ?? null}
+        accountId={user?.id ?? null}
       >
         {children}
       </PanelShell>
