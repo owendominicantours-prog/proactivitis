@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 const updateAgencyApproval = async (formData: FormData, approved: boolean) => {
