@@ -32,7 +32,7 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
   const agency = await prisma.agencyProfile.findUnique({
     where: { id: agencyId },
     include: {
-      user: true
+      User: true
     }
   });
 
