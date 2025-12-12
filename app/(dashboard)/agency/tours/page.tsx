@@ -9,6 +9,11 @@ export default async function AgencyTourCatalogPage() {
         select: {
           company: true
         }
+      },
+      departureDestination: {
+        select: {
+          name: true
+        }
       }
     },
     orderBy: { createdAt: "desc" }
@@ -21,7 +26,7 @@ export default async function AgencyTourCatalogPage() {
     location: tour.location,
     supplier: tour.SupplierProfile.company,
     heroImage: tour.heroImage ?? "/fototours/fototour.jpeg",
-    destination: tour.country ?? tour.location
+    destination: tour.departureDestination?.name ?? tour.location
   }));
 
   return (
