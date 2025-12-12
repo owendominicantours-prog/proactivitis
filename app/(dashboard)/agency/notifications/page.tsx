@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic"; // Actualizar alertas de la agency.
 import Link from "next/link";
 import { getNotificationsForRecipient, parseNotificationMetadata } from "@/lib/notificationService";
 import { markNotificationReadAction } from "@/app/(dashboard)/notifications/actions";
-import { getNotificationDisplayProps } from "@/lib/types/notificationTypes";
+import { getNotificationDisplayProps, type NotificationType } from "@/lib/types/notificationTypes";
 
 const formatDate = (value: Date) =>
   new Intl.DateTimeFormat("es-ES", {
@@ -36,7 +36,9 @@ export default async function AgencyNotificationsPage() {
           notifications.map((notification) => {
             const metadata = parseNotificationMetadata(notification.metadata);
             const redirectUrl = metadata.referenceUrl ?? "/agency/bookings";
-            const display = getNotificationDisplayProps(notification.type ?? undefined);
+            const display = getNotificationDisplayProps(
+              (notification.type as NotificationType) ?? undefined
+            );
             const message = notification.message ?? notification.body ?? "";
             return (
               <article key={notification.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
