@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getAgencyDashboardMetrics } from "@/lib/dashboardStats";
+import { prisma } from "@/lib/prisma";
 
 const kpiCards = [
   { label: "Reservas activas", key: "activeBookings", icon: "M4 9h1.5v7H4V9zM8 5H9.5v11H8V5zM12 1h1.5v15H12V1z" },
@@ -18,9 +19,13 @@ const formatCurrency = (value: number) => `$${value.toLocaleString("en-US", { mi
 
 export default async function AgencyPanel() {
   const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
+  if (!session?.user?.email) {
     return <div className="py-10 text-center text-sm text-slate-600">Inicia sesión para ver tu panel.</div>;
+  }
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const userId = user?.id;
+  if (!userId) {
+    return <div className="py-10 text-center text-sm text-slate-600">Cuenta no vinculada.</div>;
   }
 
   const metrics = await getAgencyDashboardMetrics(userId);
