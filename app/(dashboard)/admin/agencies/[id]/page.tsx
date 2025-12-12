@@ -69,15 +69,17 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
       <div className="grid gap-6 md:grid-cols-3">
         <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Email</p>
-          <p className="text-sm font-semibold text-slate-900">{agency.user.email}</p>
+          <p className="text-sm font-semibold text-slate-900">{agency.User.email}</p>
         </article>
         <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Creada el</p>
-          <p className="text-sm font-semibold text-slate-900">{agency.user.createdAt.toLocaleDateString("es-DO")}</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {agency.User.createdAt.toLocaleDateString("es-DO")}
+          </p>
         </article>
         <article className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Rol</p>
-          <p className="text-sm font-semibold text-slate-900">{agency.user.role}</p>
+          <p className="text-sm font-semibold text-slate-900">{agency.User.role}</p>
         </article>
       </div>
 
