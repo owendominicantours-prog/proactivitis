@@ -55,7 +55,7 @@ export default async function AgencyDetailPage({ params }: { params: Promise<{ i
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Detalle de agencia</p>
           <h1 className="text-2xl font-semibold text-slate-900">{agency.companyName}</h1>
-          <p className="text-sm text-slate-600">{agency.user.name ?? agency.user.email}</p>
+          <p className="text-sm text-slate-600">{agency.User.name ?? agency.User.email}</p>
         </div>
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${
